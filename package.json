@@ -1,0 +1,29 @@
+{
+  "name": "stressforge",
+  "version": "0.1.0",
+  "description": "Distributed code execution engine for algorithmic edge-case detection.",
+  "type": "module",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "start:api": "node src/api/server.js",
+    "start:worker": "node src/worker/worker.js",
+    "build:sandbox": "docker build -t stressforge-sandbox:latest ./sandbox",
+    "dev": "npm run build:sandbox && concurrently -n api,worker -c blue,green \"npm run start:api\" \"npm run start:worker\"",
+    "test:smoke": "node scripts/smoke.js"
+  },
+  "dependencies": {
+    "bullmq": "^5.34.0",
+    "cheerio": "^1.2.0",
+    "cors": "^2.8.6",
+    "express": "^4.21.2",
+    "ioredis": "^5.4.2",
+    "nanoid": "^5.0.9",
+    "openai": "^6.45.0",
+    "zod": "^3.24.1"
+  },
+  "devDependencies": {
+    "concurrently": "^9.1.2"
+  }
+}

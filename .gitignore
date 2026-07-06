@@ -1,0 +1,20 @@
+# Local environment variables & secrets
+.env
+.env.local
+
+# Dependencies
+node_modules/
+
+# Logs
+*.log
+
+# Temporary execution files & OS files
+tmp/
+work/
+scripts/
+.DS_Store
+
+# AI Agent Context Files
+.claude/
+CLAUDE.md
+AGENTS.md
