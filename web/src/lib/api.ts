@@ -1,5 +1,4 @@
 import type {
-  GenerateScriptResponse,
   StressRequest,
   StressResult,
   SubmissionRequest,
@@ -149,44 +148,6 @@ export async function getSubmission(
     throw new ApiError(`Failed to fetch run (HTTP ${res.status})`, res.status);
   }
   return data;
-}
-
-/**
- * Auto-Parser: send a problem URL, get back a generated gen.cpp or a
- * fixed-input flag. Synchronous on the backend (scrape + LLM, no queue).
- */
-export async function generateScript(
-  url: string,
-  signal?: AbortSignal,
-): Promise<GenerateScriptResponse> {
-  let res: Response;
-  try {
-    res = await fetch(`${API_BASE}/generate-script`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({ url }),
-      signal,
-    });
-  } catch (e) {
-    throw new ApiError(
-      `Cannot reach the StressForge API at ${API_BASE}. Is the backend running? (npm run start:api)`,
-      0,
-      e instanceof Error ? e.message : String(e),
-    );
-  }
-
-  const data = (await parseJsonSafe(res)) as
-    | (GenerateScriptResponse & { error?: string; details?: unknown })
-    | null;
-
-  if (!res.ok || !data) {
-    throw new ApiError(
-      data?.error || `Auto-generate failed (HTTP ${res.status})`,
-      res.status,
-      data?.details,
-    );
-  }
-  return { is_fixed_input: !!data.is_fixed_input, code: data.code ?? null };
 }
 
 export { API_BASE };

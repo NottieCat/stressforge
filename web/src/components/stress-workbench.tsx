@@ -3,7 +3,6 @@
 import { useMemo, useState } from "react";
 import { motion } from "framer-motion";
 import { toast } from "sonner";
-import { Loader2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Label } from "@/components/ui/label";
@@ -13,7 +12,6 @@ import { CodeEditor } from "@/components/code-editor";
 import { ExecutionLog } from "@/components/execution-log";
 import { ResultsPanel } from "@/components/results-panel";
 import { useStressRun } from "@/lib/use-stress-run";
-import { ApiError, generateScript } from "@/lib/api";
 import type { EditorKey } from "@/lib/types";
 import {
   SAMPLE_BRUTE,
@@ -57,10 +55,6 @@ export function StressWorkbench() {
   const [timeLimitMs, setTimeLimitMs] = useState(2000);
   const [tab, setTab] = useState<EditorKey>("optimized");
 
-  // Auto-Parser: paste a problem URL, have the backend scrape + LLM-write gen.cpp.
-  const [problemUrl, setProblemUrl] = useState("");
-  const [autoLoading, setAutoLoading] = useState(false);
-
   const { phase, result, error, run, reset } = useStressRun();
   const busy = phase === "submitting" || phase === "running";
 
@@ -68,37 +62,6 @@ export function StressWorkbench() {
 
   const setSource = (key: EditorKey, v: string) =>
     setSources((s) => ({ ...s, [key]: v }));
-
-  const onAutoGenerate = async () => {
-    const url = problemUrl.trim();
-    if (!url) {
-      toast.error("Paste a Codeforces or CodeChef problem URL first");
-      return;
-    }
-    setAutoLoading(true);
-    try {
-      const res = await generateScript(url);
-      if (res.is_fixed_input) {
-        // Predefined test cases — nothing to randomize. Leave the editor as-is.
-        toast.info(
-          "This problem uses fixed test cases. Please switch to Submission Mode to paste them directly.",
-        );
-        return;
-      }
-      if (res.code) {
-        setSource("generator", res.code);
-        setTab("generator");
-        toast.success("Generator forged from problem constraints");
-      } else {
-        toast.error("No generator was returned. Try again or write it manually.");
-      }
-    } catch (e) {
-      const msg = e instanceof ApiError ? e.message : "Auto-generate failed";
-      toast.error(msg);
-    } finally {
-      setAutoLoading(false);
-    }
-  };
 
   const onRun = () => {
     for (const t of TABS) {
@@ -128,49 +91,6 @@ export function StressWorkbench() {
         transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
         className="flex min-w-0 flex-col gap-3 rounded-lg border border-border bg-card/40 p-3"
       >
-        {/* Auto-Parser: URL -> scraped constraints -> LLM-written generator.cpp */}
-        <div className="flex flex-col gap-2 rounded-md border border-border bg-[oklch(0.155_0.012_200)] p-3 sm:flex-row sm:items-center">
-          <div className="flex min-w-0 flex-1 flex-col gap-1">
-            <Label
-              htmlFor="problem-url"
-              className="text-[11px] uppercase tracking-widest text-muted-foreground"
-            >
-              problem url · auto-parser
-            </Label>
-            <Input
-              id="problem-url"
-              type="url"
-              inputMode="url"
-              placeholder="https://codeforces.com/problemset/problem/1/A"
-              value={problemUrl}
-              disabled={autoLoading || busy}
-              onChange={(e) => setProblemUrl(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !autoLoading && !busy) onAutoGenerate();
-              }}
-              className="font-mono text-xs"
-            />
-          </div>
-          <Button
-            type="button"
-            onClick={onAutoGenerate}
-            disabled={autoLoading || busy}
-            className="bg-[var(--sf-cyan)] font-bold text-[oklch(0.17_0.03_180)] hover:bg-[oklch(0.86_0.13_210)] disabled:opacity-60 sm:mt-[18px]"
-          >
-            {autoLoading ? (
-              <>
-                <Loader2 className="size-4 animate-spin" />
-                &nbsp;forging
-              </>
-            ) : (
-              <>
-                <Sparkles className="size-4" />
-                &nbsp;auto-generate
-              </>
-            )}
-          </Button>
-        </div>
-
         <Tabs value={tab} onValueChange={(v) => setTab(v as EditorKey)}>
           <div className="flex flex-wrap items-center justify-between gap-2">
             <TabsList className="bg-secondary/60">

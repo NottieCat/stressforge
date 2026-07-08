@@ -44,19 +44,6 @@ export const config = {
   queueName: process.env.QUEUE_NAME || 'stressforge-executions',
   workerConcurrency: num('WORKER_CONCURRENCY', 4),
 
-  // LLM used by the Auto-Parser (POST /generate-script) to write gen.cpp from a
-  // problem URL. OpenAI-compatible: any provider exposing the /chat/completions
-  // API works by pointing baseUrl at it. apiKey is intentionally allowed to be
-  // empty — the route degrades gracefully (503) instead of crashing at boot.
-  llm: {
-    apiKey: process.env.OPENAI_API_KEY || '',
-    // Leave unset to hit api.openai.com; set to a free OpenAI-compatible host.
-    baseUrl: process.env.OPENAI_BASE_URL || undefined,
-    model: process.env.OPENAI_MODEL || 'gpt-4o-mini',
-    // Ceiling for the scrape fetch so a slow/hanging page can't wedge a request.
-    scrapeTimeoutMs: num('SCRAPE_TIMEOUT_MS', 10000),
-  },
-
   sandbox: {
     image: process.env.SANDBOX_IMAGE || 'stressforge-sandbox:latest',
     runTimeoutMs: num('RUN_TIMEOUT_MS', 2000),

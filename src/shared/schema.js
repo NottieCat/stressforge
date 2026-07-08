@@ -94,18 +94,10 @@ export const stressSchema = z
     optimized: sourceField,
     iterations: z.number().int().positive().max(1000).default(100),
     timeLimitMs: z.number().int().positive().max(10_000).optional(),
-    seedStart: z.number().int().nonnegative().default(1),
-  })
-  .strict();
-
-/**
- * Auto-Parser (POST /generate-script): a single problem URL the backend scrapes
- * and hands to an LLM to write gen.cpp. Host allow-listing happens in the
- * scraper; here we only require a syntactically valid URL.
- */
-export const generateScriptSchema = z
-  .object({
-    url: z.string().url().max(2048),
+    // Optional: pin the first seed to reproduce a run exactly. When omitted the
+    // worker picks a fresh random base each run so repeated runs explore new
+    // inputs instead of replaying the same seeds (1..N) every time.
+    seedStart: z.number().int().nonnegative().optional(),
   })
   .strict();
 

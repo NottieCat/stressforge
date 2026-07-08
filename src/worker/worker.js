@@ -283,7 +283,12 @@ async function processStress(job) {
   const { id } = s;
   const timeLimitMs = s.timeLimitMs || config.sandbox.runTimeoutMs;
   const iterations = s.iterations;
-  const seedStart = s.seedStart ?? 1;
+  // Reproducible when a seedStart is pinned; otherwise pick a fresh random base
+  // per run so repeated runs of the same problem explore different inputs rather
+  // than replaying seeds 1..N every time. Kept well within 32-bit unsigned so
+  // seedStart + iterations never overflows the generator's mt19937(unsigned).
+  const seedStart =
+    s.seedStart ?? (1 + Math.floor(Math.random() * 2_000_000_000));
   const seeds = Array.from({ length: iterations }, (_, i) => seedStart + i);
 
   const log = [];

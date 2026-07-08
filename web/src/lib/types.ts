@@ -107,14 +107,3 @@ export interface SubmissionRequest {
   reference?: { sourceCode: string };
   timeLimitMs?: number;
 }
-
-/* ------------------------------------------------------------------ *
- * Auto-Parser: paste a problem URL, get a StressForge gen.cpp back.
- * The backend either returns generator source, or flags the problem
- * as fixed-input (predefined cases — nothing to randomize).
- * ------------------------------------------------------------------ */
-
-export interface GenerateScriptResponse {
-  is_fixed_input: boolean;
-  code?: string | null;
-}
